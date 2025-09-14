@@ -1,0 +1,20 @@
+body { font-family: system-ui, Arial, sans-serif; background:#f6f6f6; margin: 2rem; }
+#glcanvas { display:block; border:1px solid #aaa; background:#e9eef6; }
+#hud { margin-top: .5rem; font-weight: 600; }
+#game { position: relative; display: inline-block; }
+#overlay {
+  position: absolute; inset: 0; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.35);
+}
+#overlay .panel {
+  background: #fff; border-radius: 12px; padding: 1rem 1.25rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2); text-align: center;
+  font-weight: 700;
+}
+#overlay .title { margin-bottom: .5rem; font-size: 1.1rem; }
+#overlay button {
+  border: 0; border-radius: 10px; padding: .5rem .9rem; cursor: pointer;
+  background: #ba8ee0; color: #fff;
+}
+
