@@ -7,29 +7,28 @@ let buffers = {};
 const canvas = document.getElementById("glcanvas");
 
 const COLORS = {
-  sky:      [0.937, 0.902, 0.839, 1], 
-  sidewalk: [0.792, 0.729, 0.612, 1], 
-  road:     [0.302, 0.176, 0.094, 1], 
-  lane:     [0.831, 0.627, 0.090, 1], 
-  frog:     [0.298, 0.392, 0.267, 1], 
+  sky: [0.937, 0.902, 0.839, 1],
+  sidewalk: [0.792, 0.729, 0.612, 1],
+  road: [0.302, 0.176, 0.094, 1],
+  lane: [0.831, 0.627, 0.09, 1],
+  frog: [0.298, 0.392, 0.267, 1],
 
   cars: [
-  [0.676, 0.286, 0.035, 0.914], 
-  [0.788, 0.243, 0.039, 1.000], 
-  [0.604, 0.337, 0.137, 1.000], 
-  [0.430, 0.255, 0.172, 1.000], 
-  [0.984, 0.714, 0.027, 1.000], 
-  [0.561, 0.435, 0.322, 1.000], 
-],
+    [0.676, 0.286, 0.035, 0.914],
+    [0.788, 0.243, 0.039, 1.0],
+    [0.604, 0.337, 0.137, 1.0],
+    [0.43, 0.255, 0.172, 1.0],
+    [0.984, 0.714, 0.027, 1.0],
+    [0.561, 0.435, 0.322, 1.0],
+  ],
 
-  death: [0.980, 0.300, 0.250, 1], 
-  life:  [0.198, 0.392, 0.267, 1], 
+  death: [0.98, 0.3, 0.25, 1],
+  life: [0.198, 0.392, 0.267, 1],
 };
 
 const HUD = { h: 0.05, pad: 0.02, gap: 0.03 };
-const TOP_BAR_Y =  1 - HUD.pad - HUD.h/2;
-const BOT_BAR_Y = -1 + HUD.pad + HUD.h/2;
-
+const TOP_BAR_Y = 1 - HUD.pad - HUD.h / 2;
+const BOT_BAR_Y = -1 + HUD.pad + HUD.h / 2;
 
 const LAYOUT = {
   sidewalkH: 0.25,
@@ -63,6 +62,8 @@ function rand(min, max) {
 }
 let laneSpeeds = Array.from({ length: LANES }, () => rand(0.4, 0.7));
 let wins = 0;
+let lastCrossed = false;
+let frogStartSide = "bottom";
 let deaths = 0;
 let running = true;
 
@@ -74,15 +75,23 @@ function laneCenter(i) {
   return LAYOUT.roadYMin + laneHeight(LANES) * (i + 0.5);
 }
 
-function makeLaneCars(i, n){
+function makeLaneCars(i, n) {
   const arr = [];
   const y = laneCenter(i);
   const dir = i % 2 ? -1 : +1;
   const spacing = 2.2 / n;
   const speed = laneSpeeds[i];
-  for (let k = 0; k < n; k++){
-    const startX = dir > 0 ? -1.1 + k*spacing : 1.1 - k*spacing;
-    arr.push({ x:startX, y, w:0.18, h:laneHeight(LANES)*0.7, dir, speed, color: COLORS.cars[(i*7 + k) % COLORS.cars.length] });
+  for (let k = 0; k < n; k++) {
+    const startX = dir > 0 ? -1.1 + k * spacing : 1.1 - k * spacing;
+    arr.push({
+      x: startX,
+      y,
+      w: 0.18,
+      h: laneHeight(LANES) * 0.7,
+      dir,
+      speed,
+      color: COLORS.cars[(i * 7 + k) % COLORS.cars.length],
+    });
   }
   return arr;
 }
@@ -210,14 +219,15 @@ function onKey(e) {
     frog.dir = -1;
     moved = true;
   }
-if (moved){
-  const minY = BOT_BAR_Y + HUD.h/2 + HUD.gap + frog.h/2;
-  const maxY = TOP_BAR_Y - HUD.h/2 - HUD.gap - frog.h/2;
-  frog.x = clamp(frog.x, -1 + frog.w/2, 1 - frog.w/2);
-  frog.y = clamp(frog.y,  minY,          maxY);
-  e.preventDefault();
-  render();
-}
+  if (moved) {
+    const minY = BOT_BAR_Y + HUD.h / 2 + HUD.gap + frog.h / 2;
+    const maxY = TOP_BAR_Y - HUD.h / 2 - HUD.gap - frog.h / 2;
+    frog.x = clamp(frog.x, -1 + frog.w / 2, 1 - frog.w / 2);
+    frog.y = clamp(frog.y, minY, maxY);
+    checkCrossing();
+    e.preventDefault();
+    render();
+  }
 }
 
 function overlap(a, b) {
@@ -227,58 +237,78 @@ function overlap(a, b) {
   );
 }
 
-function drawCounters(){
-  const w = 0.15, h = HUD.h, gap = 0.02, start = -1 + w/2 + 0.02;
-  const yTop = TOP_BAR_Y, yBottom = BOT_BAR_Y;
+function drawCounters() {
+  const w = 0.15,
+    h = HUD.h,
+    gap = 0.02,
+    start = -1 + w / 2 + 0.02;
+  const yTop = TOP_BAR_Y,
+    yBottom = BOT_BAR_Y;
   const nRed = Math.min(deaths, 10);
   const nGreen = Math.min(wins, 10);
-  for (let i = 0; i < nRed;   i++) drawRect(start + i*(w+gap), yTop,    w, h, COLORS.death);
-  for (let i = 0; i < nGreen; i++) drawRect(start + i*(w+gap), yBottom, w, h, COLORS.life);
+  for (let i = 0; i < nRed; i++)
+    drawRect(start + i * (w + gap), yTop, w, h, COLORS.death);
+  for (let i = 0; i < nGreen; i++)
+    drawRect(start + i * (w + gap), yBottom, w, h, COLORS.life);
 }
 
-function onHit(){
+function onHit() {
   deaths += 1;
   resetFrogAfterHit();
-  if (deaths >= 10){
+  if (deaths >= 10) {
     running = false;
-    showOverlay("Ooh nooo! Lil Fríða bled to death because she was not fit for survival!");
+    showOverlay(
+      "Ooh nooo! Lil Fríða bled to death because she was not fit for survival!"
+    );
   }
 }
 
 function checkCrossing() {
-  const topCross = TOP_BAR_Y - HUD.h/2 - HUD.gap;
-  const botCross = BOT_BAR_Y + HUD.h/2 + HUD.gap;
-  if (frog.dir > 0 && frog.y + frog.h/2 >= topCross) updateScore();
-  else if (frog.dir < 0 && frog.y - frog.h/2 <= botCross) updateScore();
+  const topCross = TOP_BAR_Y - HUD.h / 2 - HUD.gap;
+  const botCross = BOT_BAR_Y + HUD.h / 2 + HUD.gap;
+  let crossed = false;
+  let atTop = frog.y + frog.h / 2 >= topCross;
+  let atBottom = frog.y - frog.h / 2 <= botCross;
+  if (frogStartSide === "bottom" && atTop) crossed = true;
+  else if (frogStartSide === "top" && atBottom) crossed = true;
+  if (crossed && !lastCrossed) {
+    updateScore();
+  }
+  lastCrossed = crossed;
 }
 
-function updateScore(){
+function updateScore() {
   wins += 1;
   frog.dir *= -1;
   frog.x = 0;
-  const minY = BOT_BAR_Y + HUD.h/2 + HUD.gap + frog.h/2;
-  const maxY = TOP_BAR_Y - HUD.h/2 - HUD.gap - frog.h/2;
-  frog.y = frog.dir > 0 ? minY : maxY;
-  if (wins >= 10){
+  const minY = BOT_BAR_Y + HUD.h / 2 + HUD.gap + frog.h / 2;
+  const maxY = TOP_BAR_Y - HUD.h / 2 - HUD.gap - frog.h / 2;
+  if (frog.dir > 0) {
+    frog.y = minY;
+    frogStartSide = "bottom";
+  } else {
+    frog.y = maxY;
+    frogStartSide = "top";
+  }
+  lastCrossed = false;
+  if (wins >= 10) {
     running = false;
     showOverlay("You won! Fríða crossed safely 10 times. Such a survivor!");
   }
 }
-
 
 function collidesAny() {
   for (const c of cars) if (overlap(frog, c)) return true;
   return false;
 }
 
-function resetFrogAfterHit(){
+function resetFrogAfterHit() {
   frog.x = 0;
-  const minY = BOT_BAR_Y + HUD.h/2 + HUD.gap + frog.h/2;
-  const maxY = TOP_BAR_Y - HUD.h/2 - HUD.gap - frog.h/2;
-  if (frog.dir > 0) frog.y = minY; else frog.y = maxY;
+  const minY = BOT_BAR_Y + HUD.h / 2 + HUD.gap + frog.h / 2;
+  const maxY = TOP_BAR_Y - HUD.h / 2 - HUD.gap - frog.h / 2;
+  if (frog.dir > 0) frog.y = minY;
+  else frog.y = maxY;
 }
-
-
 
 function update(dt) {
   for (const c of cars) {
@@ -296,28 +326,29 @@ function tick(t) {
   if (running) {
     update(dt);
     if (collidesAny()) onHit();
-    checkCrossing();
   }
   render();
   requestAnimationFrame(tick);
 }
 
-function showOverlay(msg){
-  const t = document.querySelector('#overlay .title');
+function showOverlay(msg) {
+  const t = document.querySelector("#overlay .title");
   if (t && msg) t.textContent = msg;
-  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById("overlay").style.display = "flex";
 }
-function hideOverlay(){
-  document.getElementById('overlay').style.display = 'none';
+function hideOverlay() {
+  document.getElementById("overlay").style.display = "none";
 }
 
-function restartGame(){
+function restartGame() {
   wins = 0;
   deaths = 0;
   laneSpeeds = Array.from({ length: LANES }, () => rand(0.4, 0.7));
   cars.length = 0;
   for (let i = 0; i < LANES; i++) cars.push(...makeLaneCars(i, CARS_PER_LANE));
-  frog.x = 0; frog.y = -1 + LAYOUT.sidewalkH/2 + 0.025; frog.dir = +1;
+  frog.x = 0;
+  frog.y = -1 + LAYOUT.sidewalkH / 2 + 0.025;
+  frog.dir = +1;
   running = true;
   hideOverlay();
 }
