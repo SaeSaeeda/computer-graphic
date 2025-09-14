@@ -241,7 +241,7 @@ function onHit(){
   resetFrogAfterHit();
   if (deaths >= 10){
     running = false;
-    showOverlay("Ooh nooo! Lil Frogger bled to death because it was not fit for survival!");
+    showOverlay("Ooh nooo! Lil Fríða bled to death because she was not fit for survival!");
   }
 }
 
