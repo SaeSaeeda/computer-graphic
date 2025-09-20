@@ -6,6 +6,7 @@
 
 <script id="vertex-shader" type="x-shader/x-vertex">
 uniform float time;
+uniform int mode;
 attribute vec4 vPosition;
 varying vec3 vColor;
 
@@ -14,10 +15,30 @@ void main()
     gl_PointSize = 3.0;
     float y = mod(vPosition.y - 0.001 * time + 1.0, 2.0) - 1.0;
     gl_Position = vec4(vPosition.x, y, vPosition.z, vPosition.w);
-    if (y < 0.0)
-        vColor = vec3(1.0, 1.0, 1.0); // white
-    else
-        vColor = vec3(1.0, 0.0, 0.0); // red
+
+    if (mode == 0) {
+        // Poland
+        if (y < 0.0)
+            vColor = vec3(1.0, 1.0, 1.0); // white
+        else
+            vColor = vec3(1.0, 0.0, 0.0); // red
+    } else if (mode == 1) {
+        // France
+        if (vPosition.x < -0.33)
+            vColor = vec3(0.0, 0.0, 1.0); // blue
+        else if (vPosition.x < 0.33)
+            vColor = vec3(1.0, 1.0, 1.0); // white
+        else
+            vColor = vec3(1.0, 0.0, 0.0); // red
+    } else {
+        // Iceland
+        float crossOffset = -0.18;
+        vColor = vec3(0.0, 0.2, 0.6); // blue background
+        if (abs(vPosition.x - crossOffset) < 0.08 || abs(y) < 0.08)
+            vColor = vec3(1.0, 1.0, 1.0); // white
+        if (abs(vPosition.x - crossOffset) < 0.04 || abs(y) < 0.04)
+            vColor = vec3(0.8, 0.0, 0.1); // red
+    }
 }
 </script>
 

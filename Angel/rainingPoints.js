@@ -46,6 +46,7 @@ window.onload = function init()
     gl.enableVertexAttribArray( vPosition );
 
     locTime = gl.getUniformLocation( program, "time" );
+    locMode = gl.getUniformLocation(program, "mode");
 
     iniTime = Date.now();
     
@@ -58,7 +59,8 @@ function render() {
 
     var msek = Date.now() - iniTime;
     gl.uniform1f( locTime, msek );
-    
+    var mode = Math.floor((msek / 3000) % 3);
+    gl.uniform1i( locMode, mode );
     gl.drawArrays( gl.POINTS, 0, numPoints );
 
     window.requestAnimFrame(render);
