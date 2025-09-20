@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html>
-
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>2D Sierpinski Gasket</title>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPosition;
-uniform float time;
 
 void main()
 {
-    float stretch = 1.0 + 0.3 * sin(time);
+	gl_PointSize = 3.0;             // Stærri punktar!
     gl_Position = vPosition;
-    gl_Position.y *= stretch;
 }
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
-
 precision mediump float;
 
 void main()
@@ -27,23 +26,12 @@ void main()
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
-<script type="text/javascript" src="circlefan.js"></script>
-
+<script type="text/javascript" src="gasket1-d2-1.js"></script>
+</head>
 
 <body>
-<label for="pointSlider">Number of Points: <span id="sliderValue">20</span></label>
-<input type="range" id="pointSlider" min="3" max="50" value="20" />
-<br/>
 <canvas id="gl-canvas" width="512" height="512">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
-<script>
-    // Update label on slider input
-    var slider = document.getElementById('pointSlider');
-    var label = document.getElementById('sliderValue');
-    slider.oninput = function() {
-        label.textContent = this.value;
-    };
-</script>
 </body>
 </html>

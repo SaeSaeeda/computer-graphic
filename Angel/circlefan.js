@@ -16,16 +16,15 @@ var center = vec2(0, 0);
 
 var points = [];
 
-
 window.onload = function init() {
-    canvas = document.getElementById( "gl-canvas" );
-    gl = WebGLUtils.setupWebGL( canvas );
-    if ( !gl ) { alert( "WebGL isn't available" ); }
-    gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+    canvas = document.getElementById("gl-canvas");
+    gl = WebGLUtils.setupWebGL(canvas);
+    if (!gl) { alert("WebGL isn't available"); }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
-    gl.useProgram( program );
+    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(program);
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
@@ -33,7 +32,6 @@ window.onload = function init() {
     function updateCircle(k) {
         createCirclePoints(center, radius, k);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-        render();
     }
 
     var slider = document.getElementById('pointSlider');
@@ -49,10 +47,15 @@ window.onload = function init() {
     gl.enableVertexAttribArray(vPosition);
 
     updateCircle(numCirclePoints);
+
+    var uTime = gl.getUniformLocation(program, "time"); 
+    function animate() {
+        gl.uniform1f(uTime, performance.now() / 1000.0);
+        render();
+        requestAnimationFrame(animate);
+    }
+    animate();
 }
-
-
-// Create the points of the circle
 function createCirclePoints( cent, rad, k )
 {
     points = [];

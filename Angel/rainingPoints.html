@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Rignandi punktar</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+uniform float time;
+attribute vec4 vPosition;
+varying vec3 vColor;
+
+void main()
+{
+    gl_PointSize = 3.0;
+    float y = mod(vPosition.y - 0.001 * time + 1.0, 2.0) - 1.0;
+    gl_Position = vec4(vPosition.x, y, vPosition.z, vPosition.w);
+    if (y < 0.0)
+        vColor = vec3(1.0, 1.0, 1.0); // white
+    else
+        vColor = vec3(1.0, 0.0, 0.0); // red
+}
+</script>
+
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec3 vColor;
+void main()
+{
+    gl_FragColor = vec4(vColor, 1.0);
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="rainingPoints.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="750" height="540"></canvas>
+<style>
+    #gl-canvas {
+    border: 4px solid #222;
+    border-radius: 10px;
+    box-sizing: border-box;
+    display: block;
+}
+</style>
+</body>
+</html>
