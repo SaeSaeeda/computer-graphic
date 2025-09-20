@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec4 vPosition;
+    uniform vec2 boxPos;
+    uniform vec2 paddlePos;
+
+    void main()
+    {
+      vec4 pos = vPosition;
+      pos.xy += boxPos + paddlePos;
+      gl_Position = pos;
+    }
+  </script>
+
+  <script id="fragment-shader" type="x-shader/x-fragment">
+
+      precision mediump float;
+      uniform float drawMode;
+
+    void main()
+    {
+      if (drawMode < 0.5)
+        gl_FragColor = vec4(0.36, 0.22, 0.09, 1.0); 
+      else
+        gl_FragColor = vec4(0.78, 0.60, 0.36, 1.0);
+    }
+  </script>
+  <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+  <script type="text/javascript" src="../Common/initShaders.js"></script>
+  <script type="text/javascript" src="../Common/MV.js"></script>
+  <script type="text/javascript" src="breakout.js"></script>
+  <link rel="stylesheet" href="breakout.css" />
+
+  <body>
+    <canvas id="gl-canvas" width="1000" height="600"></canvas>
+  </body>
+</html>
