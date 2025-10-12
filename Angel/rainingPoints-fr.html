@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Frönsk rigning</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+uniform float time;
+attribute vec4 vPosition;
+varying vec4 pColor;
+
+// Sýnislausn á dæmi 2b á Heimadæmum 3, haust 2025
+// Útfærsla á franska fánanum
+
+void main()
+{
+	gl_PointSize = 3.0;
+    vec4 tpos = vPosition;
+
+    tpos.y = 1.0 - mod(0.0015*time + tpos.y+1.0, 2.0);
+
+    if (tpos.x < -0.3333)
+        pColor = vec4(0.0, 0.0, 0.57, 1.0);      // Vinstri hluti blár
+    else if (tpos.x < 0.3333)
+        pColor = vec4(1.0, 1.0, 1.0, 1.0);       // Miðhluti hvítur
+    else
+        pColor = vec4(0.88, 0.0, 0.06, 1.0);     // Hægri hluti rauður
+    
+    gl_Position = tpos;
+    
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 pColor;
+
+void main()
+{
+    gl_FragColor = pColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="rainingPoints.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="750" height="540">
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Íslensk rigning</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+uniform float time;
+attribute vec4 vPosition;
+varying vec4 pColor;
+
+// Sýnislausn á dæmi 2c á Heimadæmum 3, haust 2025
+// Útfærsla á íslenska fánanum
+
+void main()
+{
+	gl_PointSize = 3.0;
+    vec4 tpos = vPosition;
+
+    tpos.y = 1.0 - mod(0.0015*time + tpos.y+1.0, 2.0);
+
+    
+    if (tpos.x < -0.44 || tpos.x > -0.12) {
+        // Ef vinstra eða hægra megin við lóðrétta hluta...
+        if (tpos.y > 0.222 || tpos.y < -0.222)
+            // Ef fyrir ofan eða neðan lárétta kross
+            pColor = vec4(0.008, 0.322, 0.612, 1.0);      // Blár
+        else
+            if (tpos.y > 0.111 || tpos.y < -0.111)
+                pColor = vec4(1.0, 1.0, 1.0, 1.0);        // Hvítur
+            else
+                pColor = vec4(0.863, 0.118, 0.208, 1.0);  // Rauður
+    } else
+        // Innan lóðrétta hluta, ath. hvort hvítt eða rautt
+        if (tpos.x < -0.36 || tpos.x > -0.2)
+            pColor = vec4(1.0, 1.0, 1.0, 1.0);            // Hvítur
+        else
+            pColor = vec4(0.863, 0.118, 0.208, 1.0);      // Rauður
+        
+    gl_Position = tpos;
+    
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 pColor;
+
+void main()
+{
+    gl_FragColor = pColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="rainingPoints.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="750" height="540">
+</body>
+</html>
